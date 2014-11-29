@@ -1,0 +1,13 @@
+{% autoescape off %}
+Hello
+=====
+
+Here's your email.
+
+{{my_message}}
+
+Explanation
+-----------
+
+This is the text body part of the example template.
+{% endautoescape %}
