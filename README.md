@@ -44,7 +44,7 @@ Copy the example template files:
 
 to your own location, replace the contents, update the path in the `send_mail` call, and you are good to go.
 
-`send_mail` passes keyword arguments on to Django's `send_mail`, so you can also pass `fail_silently` (default is False), `auth_user`, `auth_password`, and `connection`.
+`send_mail` also takes an optional `fail_silently` boolean argument (default is False), and it passes other keyword arguments on to Django's [EmailMessage](https://docs.djangoproject.com/en/1.7/topics/email/#django.core.mail.EmailMessage) constructor, so you can also pass `headers` and `connection`.
 
 License:
 

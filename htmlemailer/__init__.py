@@ -1,17 +1,13 @@
 from django.template.loader import render_to_string
 
-from django.core.mail import send_mail as django_send_mail
+from django.core.mail import EmailMultiAlternatives
 
 import pynliner
 
-def send_mail(template_prefix, from_email, recipient_list, template_context, **kwargs):
+def send_mail(template_prefix, from_email, recipient_list, template_context, fail_silently=False, **kwargs):
 	# Sends a templated HTML email.
 	#
-	# Unrecognized arguments are passed on to Django's send_mail, so
-	# you may also want to pass:
-	#   fail_silently (default is False)
-	#   auth_user, auth_password, connection
-	# But do not pass html_message, since that is sent by us.
+	# Unrecognized arguments are passed on to Django's EmailMultiAlternatives's init method.
 
 	if not template_context:
 		# initialize if empty
@@ -32,5 +28,15 @@ def send_mail(template_prefix, from_email, recipient_list, template_context, **k
 	# inline HTML styles because some mail clients dont process the <style> tag
 	html_body = pynliner.fromString(html_body)
 
+	# construct MIME message
+	msg = EmailMultiAlternatives(
+		subject=subject,
+		body=text_body,
+		from_email=from_email,
+		to=recipient_list,
+		**kwargs
+		)
+	msg.attach_alternative(html_body, "text/html")
+
 	# send!
-	django_send_mail(subject, text_body, from_email, recipient_list, html_message=html_body, **kwargs)
+	msg.send(fail_silently=fail_silently)
