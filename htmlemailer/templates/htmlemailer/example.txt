@@ -1,4 +1,5 @@
-{% autoescape off %}
+{% extends "htmlemailer/example_template.txt" %}
+{% block content %}
 Hello
 =====
 
@@ -10,4 +11,4 @@ Explanation
 -----------
 
 This is the text body part of the example template.
-{% endautoescape %}
+{% endblock %}

@@ -1,15 +1,14 @@
-{% extends "htmlemailer/boilerplate.html" %}
+{% extends "htmlemailer/example_template.html" %}
 
-{% block head %}
+{% block extra_head %}
 <style>
-	#backgroundTable {
-		background-color: blue;
-		color: white;
+	h1 {
+		font-style: italic;
 	}
 </style>
 {% endblock %}
 
-{% block body %}
+{% block content %}
 	<h1>Hello</h1>
 
 		<p>Here&rsquo;s your email!</p>
