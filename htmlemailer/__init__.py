@@ -1,6 +1,6 @@
 from django.template.loader import render_to_string
-
 from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
 
 import pynliner
 
@@ -9,16 +9,14 @@ def send_mail(template_prefix, from_email, recipient_list, template_context, fai
 	#
 	# Unrecognized arguments are passed on to Django's EmailMultiAlternatives's init method.
 
-	if not template_context:
-		# initialize if empty
-		template_context = { }
-	else:
-		# clone
-		template_context = dict(template_context)
+	# add default template context variables from settings.DEFAULT_TEMPLATE_CONTEXT
+	template_context = build_template_context(template_context)
 
 	# subject
 	subject = render_to_string(template_prefix + '_subject.txt', template_context)
 	subject = ''.join(subject.splitlines())  # remove superfluous line breaks
+
+	# Add subject as a new context variable, and it is used in the base HTML template's title tag.
 	template_context['subject'] = subject
 
 	# body
@@ -40,3 +38,19 @@ def send_mail(template_prefix, from_email, recipient_list, template_context, fai
 
 	# send!
 	msg.send(fail_silently=fail_silently)
+
+
+def build_template_context(user_variables):
+	template_context = { }
+
+	# Add in default context variables from the settings module, if such a setting exists.
+	try:
+		template_context.update(settings.DEFAULT_TEMPLATE_CONTEXT)
+	except AttributeError:
+		pass
+
+	# Add in the user-provided context variables.
+	if user_variables:
+		template_context.update(user_variables)
+
+	return template_context
