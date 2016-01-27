@@ -14,4 +14,4 @@ setup(name='django-html-emailer',
       author_email='jt@occams.info',
       install_requires=install_requires,
       packages=['htmlemailer'],
-      provides=['django-html-emailer'])
+      provides=['htmlemailer'])
