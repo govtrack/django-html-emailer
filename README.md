@@ -43,23 +43,23 @@ htmlemailer composes your actual email from a series of templates. Usually you h
 3. The HTML Email Boilerplate, which we've already converted into a template.
 4. A `..._subject.txt` template which generates the subject line of the email (it's also a template so you can use variables etc. in it).
 
-First copy the example "general design" template files into your project, naming them as you like. Copy them from:
+First copy the example "general design" template files into your project's templates path, naming them as you like. Copy them from:
 
-* htmlemailer/templates/htmlemailer/example_template.txt
-* htmlemailer/templates/htmlemailer/example_template.html
+* [htmlemailer/templates/htmlemailer/example_template.txt](htmlemailer/templates/htmlemailer/example_template.txt)
+* [htmlemailer/templates/htmlemailer/example_template.html](htmlemailer/templates/htmlemailer/example_template.html)
 
 Then copy the example "actual content" template files into your project:
 
-* htmlemailer/templates/htmlemailer/example_subject.txt
+* [htmlemailer/templates/htmlemailer/example_subject.txt](htmlemailer/templates/htmlemailer/example_subject.txt)
 
 and either
 
-* htmlemailer/templates/htmlemailer/example.md
+* [htmlemailer/templates/htmlemailer/example.md](htmlemailer/templates/htmlemailer/example.md)
 
 if you want to use a single Markdown file or
 
-* htmlemailer/templates/htmlemailer/example.txt
-* htmlemailer/templates/htmlemailer/example.html
+* (htmlemailer/templates/htmlemailer/example.txt)[htmlemailer/templates/htmlemailer/example.txt]
+* (htmlemailer/templates/htmlemailer/example.html)[htmlemailer/templates/htmlemailer/example.html]
 
 if you want to explicitly set the text and HTML parts of the message separately.
 
