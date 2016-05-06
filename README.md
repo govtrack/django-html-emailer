@@ -95,8 +95,9 @@ A test Django project is included. To use:
 	cd test_project
 	pip3 install pynliner commonmark
 	python3 manage.py test_html_email example
+	python3 manage.py test_html_email example2
 
-This will output a test email (a MIME message) to the console.
+This will output test emails (a MIME message) to the console. `example` uses separate text and HTML parts. `example2` uses a single Markdown body file.
 
 License
 -------
