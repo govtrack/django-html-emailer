@@ -9,17 +9,9 @@ A utility app for sending HTML emails in Django 1.7+:
 Installation
 ------------
 
-For Python 3, first run:
+Install this module: (sorry it's not on pypi yet)
 
-    pip install git+https://github.com/dcramer/pynliner@python3
-
-before proceeding to get a Python 3-compatible version of pyliner.
-
-Install this module:
-
-	# pip install django-html-emailer # not working yet...
-	
-	pip install git+https://this-repository-url
+	pip install git+https://github.com/if-then-fund/django-html-emailer
 
 Add `htmlemailer` to your INSTALLED_APPS.
 
