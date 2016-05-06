@@ -1,0 +1,6 @@
+{% extends "template.txt" %}
+{% block content %}
+Hello!
+
+{{message}}
+{% endblock %}

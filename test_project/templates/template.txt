@@ -1,0 +1,6 @@
+{% autoescape off %}{% block content %}
+{% endblock %}
+
+----
+Unsubscribe instructions here.
+{% endautoescape %}

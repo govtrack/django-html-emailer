@@ -64,6 +64,17 @@ Advanced Usage
 
 If `DEFAULT_TEMPLATE_CONTEXT` is set in your settings, then it should be a dictionary with default template context variables passed into your email templates.
 
+Testing (Library Developers)
+----------------------------
+
+A test Django project is included. To use:
+
+	cd test_project
+	pip3 install pynliner
+	python3 manage.py test_html_email example
+
+This will output a test email (a MIME message) to the console.
+
 License
 -------
 
