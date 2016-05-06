@@ -14,7 +14,7 @@ def send_mail(template_prefix, from_email, recipient_list, template_context, fai
 
 	# subject
 	subject = render_to_string(template_prefix + '_subject.txt', template_context)
-	subject = ''.join(subject.splitlines())  # remove superfluous line breaks
+	subject = ''.join(subject.splitlines()).strip()  # remove superfluous line breaks and trailing spaces
 
 	# Add subject as a new context variable, and it is used in the base HTML template's title tag.
 	template_context['subject'] = subject
