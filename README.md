@@ -35,18 +35,27 @@ Replace the recipient address with your email address. This should send you a me
 Your Templates
 --------------
 
-Copy the example base template files into your project (and name them as you like). These files provide a place to set default styling, footer text, etc. that apply across all of your emails, like base.html does for your web templates. You can name the files anything you like, since the name will be specified in an `{% extends ... %}` template tag in the actual email templates.
+htmlemailer composes your actual email from a series of templates. Usually you have:
+
+1. A template storing the actual content of your email (actually a pair of templates, one for the HTML part and one for the plain text part), which extends...
+2. A template that has the general design of all of your emails (CSS, header, footer), akin to your `base.html` for your site (again actually a pair, one for HTML and one for text), which extends...
+3. The HTML Email Boilerplate, which we've already converted into a template.
+4. A `..._subject.txt` template which generates the subject line of the email (it's also a template so you can use variables etc. in it).
+
+First copy the example "general design" template files into your project, naming them as you like. Copy them from:
 
 * htmlemailer/templates/htmlemailer/example_template.txt
 * htmlemailer/templates/htmlemailer/example_template.html
 
-Copy the example email files into your project (and name them as you like) to provide the content for particular emails.
+Then copy the example "actual content" template files into your project. You can change the path and file names, except the three files must have the *same* path name up to `.txt`, `.html`, and `_subject.txt`. That's how the module knows they go together. Our examples for you to copy are stored in:
 
 * htmlemailer/templates/htmlemailer/example.txt
 * htmlemailer/templates/htmlemailer/example.html
 * htmlemailer/templates/htmlemailer/example_subject.txt
 
-The email templates (example.txt, exmaple.html) specify the path to the base templates (example_template.txt, example_template.html) in an `{% extends ... %}` template tag, so you'll need to update the paths there to where you put your base templates. Then update the path in the `send_mail` call to specify the location of your email templates.
+If you changed the path of the general design templates, you'll have to update the `{% extends ... %}` template tags in `example.txt` and `example.html` to point to the new path. You can of course have more than one email by creating a new set of `.txt`, `.html`, and `_subject.txt` files at a different path.
+
+Lastly, in your call to `send_mail`, update the first argument to specify the location of your email templates. Just specify the common part of the path name of the three files. In this case, it's just `htmlemailer/example`. The `.txt`, `.html`, and `_subject.txt` will be added by the library.
 
 Advanced Usage
 --------------
