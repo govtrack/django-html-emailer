@@ -1,8 +1,14 @@
+from django.template.exceptions import TemplateDoesNotExist
+from django.template.base import Template, Context
+from django.template.engine import Engine
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 
+import re
+
 import pynliner
+import CommonMark
 
 def send_mail(template_prefix, from_email, recipient_list, template_context, fail_silently=False, **kwargs):
 	# Sends a templated HTML email.
@@ -20,8 +26,22 @@ def send_mail(template_prefix, from_email, recipient_list, template_context, fai
 	template_context['subject'] = subject
 
 	# body
-	text_body = render_to_string(template_prefix + '.txt', template_context)
-	html_body = render_to_string(template_prefix + '.html', template_context)
+
+	# see if a Markdown template is present
+	try:
+		# Use the template engine's loaders to find the template, but then just
+		# ask for its source so we have the raw Markdown.
+		md_template = Engine.get_default().get_template(template_prefix + '.md').source
+	except TemplateDoesNotExist:
+		md_template = None
+
+	if md_template:
+		# render the text and HTML parts from the Markdown template
+		text_body, html_body = render_from_markdown(md_template, template_context)
+	else:
+		# render from separate text and html templates
+		text_body = render_to_string(template_prefix + '.txt', template_context)
+		html_body = render_to_string(template_prefix + '.html', template_context)
 
 	# inline HTML styles because some mail clients dont process the <style> tag
 	html_body = pynliner.fromString(html_body)
@@ -54,3 +74,151 @@ def build_template_context(user_variables):
 		template_context.update(user_variables)
 
 	return template_context
+
+
+def render_from_markdown(md, template_context):
+	# Strip the "extends" tag.
+	m = re.match(r"\s*\{\%\s+extends\s+\"([^\"]*)\" \%\}", md)
+	extends_template = None
+	if m:
+		extends_template = m.group(1)
+		m = m.group(0)
+		md = md[len(m):]
+
+	# Render the Markdown first. Markdown has different text escaping rules
+	# (backslash-escaping of certain symbols only), and we can't add that
+	# logic to Django's template auto-escaping. So we render the Markdown
+	# first, which gives HTML. That HTML can be treated as a regular Django
+	# template (with regular HTML autoescaping).
+	#
+	# (If we did it in the other order, we'd have to disable Django's
+	# HTML autoescaping and then have some other method to prevent the
+	# use of variables in the template from generating Markdown tags.)
+	#
+	# We turn off CommonMark's safe mode, however, since we trust the
+	# template. (Safe mode prohibits HTML inlines and also prevents some
+	# unsafe URLs, but that's up to the caller.)
+
+	# CommonMark replaces non-URL-safe characters in link URLs with
+	# their %-escaped code. Monkey-patch the CommonMark library to
+	# not do that for { and } so that template variables within links
+	# remain a template variable and don't turn into %7B%7Bvarname%7D%7D.
+	# Do this prior to parsing.
+	from CommonMark import common, inlines
+	def fixed_normalize_uri(uri):
+		return common.normalize_uri(uri).replace("%7B", "{").replace("%7D", "}")
+	inlines.normalize_uri = fixed_normalize_uri
+
+	# Parse the Markdown.
+	md = CommonMark.Parser().parse(md)
+
+	# Render to HTML, put the extends tag back with an .html extension.
+	html_body = CommonMark.HtmlRenderer({ "safe": False }).render(md)
+	if extends_template:
+		html_body = "{% extends \"" + extends_template + ".html" + "\" %}\n" + html_body
+
+	# For the text portion, we'll render using a special renderer (see
+	# below), then wrap in a Django tag to turn off autoescaping, and
+	# then put back the extends tag but with a .txt extension.
+	text_body = CommonMarkPlainTextRenderer().render(md)
+	text_body = "{% autoescape off %}" + text_body + "{% endautoescape %}"
+	if extends_template:
+		text_body = "{% extends \"" + extends_template + ".txt" + "\" %}\n" + text_body
+
+	# Now render as Django templates.
+	html_body = Template(html_body).render(Context(template_context)).strip()
+	text_body = Template(text_body).render(Context(template_context)).strip()
+	return text_body, html_body
+
+
+class CommonMarkPlainTextRenderer(object):
+	def render(self, block):
+		walker = block.walker()
+		event = walker.nxt()
+		buf = ""
+		state = []
+		hpos = None
+		apos = None
+		while event is not None:
+			entering = event['entering']
+			node = event['node']
+			if node.t == 'Text':
+				buf += node.literal
+			elif node.t == 'Softbreak':
+				buf += "\n"
+			elif node.t == 'Hardbreak':
+				buf += "\n"
+			elif node.t == 'Emph':
+				buf += "*" # same symbol on each side
+			elif node.t == 'Strong':
+				buf += "**" # same symbol on each side
+			elif node.t == 'HtmlInline':
+				raise ValueError("HTML inline found in the Markdown but it is being rendered as text.")
+			elif node.t == 'CustomInline':
+				if entering and node.on_enter:
+					buf += node.on_enter
+				elif not entering and node.on_exit:
+					buf += node.on_exit
+			elif node.t == 'Link':
+				if entering:
+					apos = len(buf)
+				else:
+					text = buf[apos:]
+					if text != node.destination:
+						buf += " <" + node.destination + ">"
+			elif node.t == 'Image':
+				if entering:
+					buf += "[image]"
+				else:
+					pass
+			elif node.t == 'Code':
+				buf += "[" + node.literal + "]"
+			elif node.t == 'Document':
+				pass
+			elif node.t == 'Paragraph':
+				if entering:
+					if "blockquote" in state:
+						buf += "> "
+				else:
+					buf += "\n\n"
+			elif node.t == 'BlockQuote':
+				if entering:
+					state.append("blockquote")
+				else:
+					state.pop(-1)
+			elif node.t == 'Item':
+				if entering:
+					buf += "* "
+				else:
+					pass
+			elif node.t == 'List':
+				# node.list_data['type'] == 'Bullet' (or 'Numbered' ?)
+				# node.list_data['start'] (or not present)
+				pass
+			elif node.t == 'Heading':
+				if entering:
+					hpos = len(buf)
+				else:
+					buf += "\n"
+					if node.level == 1:
+						buf += "=" * (len(buf)-hpos-1)
+					elif node.level == 2:
+						buf += "-" * (len(buf)-hpos-1)
+					buf += "\n\n"
+					
+			elif node.t == 'CodeBlock':
+				pass
+			elif node.t == 'HtmlBlock':
+				raise ValueError("Raw HTML found in the Markdown but it is being rendered as text.")
+			elif node.t == 'CustomBlock':
+				if entering and node.on_enter:
+					buf += node.on_enter
+				elif not entering and node.on_exit:
+					buf += node.on_exit
+			elif node.t == 'ThematicBreak':
+				buf += "\n" + "-"*60 + "\n"
+			else:
+				raise ValueError('Unknown node type {0}'.format(node.t))
+			event = walker.nxt()
+		return buf
+		

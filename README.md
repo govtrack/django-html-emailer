@@ -5,6 +5,7 @@ A utility app for sending HTML emails in Django 1.7+:
 
 * Uses [HTML Email Boilerplate v0.5](http://htmlemailboilerplate.com/)
 * Inlines CSS (per the boilerplate's instructions) using [pynliner](https://pythonhosted.org/pynliner/).
+* Renders message body from Markdown or from text and HTML parts that you give.
 
 Installation
 ------------
@@ -37,8 +38,8 @@ Your Templates
 
 htmlemailer composes your actual email from a series of templates. Usually you have:
 
-1. A template storing the actual content of your email (actually a pair of templates, one for the HTML part and one for the plain text part), which extends...
-2. A template that has the general design of all of your emails (CSS, header, footer), akin to your `base.html` for your site (again actually a pair, one for HTML and one for text), which extends...
+1. A template storing the actual content of your email (either a Markdown template or a pair of templates, one for the HTML part and one for the plain text part), which extends...
+2. A template that has the general design of all of your emails (CSS, header, footer), akin to your `base.html` for your site (a pair of templates, one for HTML and one for text), which extends...
 3. The HTML Email Boilerplate, which we've already converted into a template.
 4. A `..._subject.txt` template which generates the subject line of the email (it's also a template so you can use variables etc. in it).
 
@@ -47,15 +48,26 @@ First copy the example "general design" template files into your project, naming
 * htmlemailer/templates/htmlemailer/example_template.txt
 * htmlemailer/templates/htmlemailer/example_template.html
 
-Then copy the example "actual content" template files into your project. You can change the path and file names, except the three files must have the *same* path name up to `.txt`, `.html`, and `_subject.txt`. That's how the module knows they go together. Our examples for you to copy are stored in:
+Then copy the example "actual content" template files into your project:
+
+* htmlemailer/templates/htmlemailer/example_subject.txt
+
+and either
+
+* htmlemailer/templates/htmlemailer/example.md
+
+if you want to use a single Markdown file or
 
 * htmlemailer/templates/htmlemailer/example.txt
 * htmlemailer/templates/htmlemailer/example.html
-* htmlemailer/templates/htmlemailer/example_subject.txt
 
-If you changed the path of the general design templates, you'll have to update the `{% extends ... %}` template tags in `example.txt` and `example.html` to point to the new path. You can of course have more than one email by creating a new set of `.txt`, `.html`, and `_subject.txt` files at a different path.
+if you want to explicitly set the text and HTML parts of the message separately.
 
-Lastly, in your call to `send_mail`, update the first argument to specify the location of your email templates. Just specify the common part of the path name of the three files. In this case, it's just `htmlemailer/example`. The `.txt`, `.html`, and `_subject.txt` will be added by the library.
+You can change the path and file names, except the set of files must have the *same* path name up to `.md`, `.txt`, `.html`, and `_subject.txt`. That's how the module knows they go together (note how you don't include the file extension in the call to `send_mail`).
+
+If you changed the path of the general design templates, you'll have to update the `{% extends ... %}` template tags in `example.md` or `example.txt` and `example.html` to point to the new path. You can of course have more than one email by creating a new set of `.md`, `.txt`, `.html`, and `_subject.txt` files at a different path.
+
+Lastly, in your call to `send_mail`, update the first argument to specify the location of your email templates. Just specify the common part of the path name of the three files. In this case, it's just `htmlemailer/example`. The `.md`, `.txt`, `.html`, and `_subject.txt` will be added by the library.
 
 Advanced Usage
 --------------
@@ -64,13 +76,24 @@ Advanced Usage
 
 If `DEFAULT_TEMPLATE_CONTEXT` is set in your settings, then it should be a dictionary with default template context variables passed into your email templates.
 
+Notes on Markdown
+-----------------
+
+Markdown messages are rendered into HTML using CommonMark ([specification](http://spec.commonmark.org/), [library](https://pypi.python.org/pypi/CommonMark)). The text part of the message is rendered using a special Markdown-to-text renderer, because raw Markdown doesn't always look professional (especially links and images).
+
+The Markdown is rendered *first* prior to running the Django template engine. So you cannot cause Markdown to be inserted into the email through template context variables. This is by design.
+
+Also note that the `{% extends ... %}` tag at the top of the Markdown message body template does not contain the `.txt` or `.html` file extension. The library inserts the right file extension for the general design template prior to rendering into HTML and text.
+
+Note: The CommonMark library is monkey-patched to turn off escaping of {'s and }'s in URLs (to allow for template tags to appear within links). If you are using CommonMark elsewhere in your application, that might affect you if you are creating Markdown documents with these characters in URLs (which is probably bad anyway).
+
 Testing (Library Developers)
 ----------------------------
 
 A test Django project is included. To use:
 
 	cd test_project
-	pip3 install pynliner
+	pip3 install pynliner commonmark
 	python3 manage.py test_html_email example
 
 This will output a test email (a MIME message) to the console.

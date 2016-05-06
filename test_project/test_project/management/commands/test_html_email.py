@@ -20,5 +20,6 @@ class Command(BaseCommand):
 
             # example template context
             {
-                "message": "This is a message containing >>> some HTML characters to test escaping <<<<."
+                "message": "This is a message containing >>> some HTML characters to test escaping <<<<.",
+                "link": "https://github.com/if-then-fund/django-html-emailer",
             })

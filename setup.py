@@ -4,7 +4,7 @@
 from setuptools import setup
 
 install_requires = [
-    'pynliner',
+    'pynliner', 'commonmark'
 ]
 
 setup(name='django-html-emailer',
