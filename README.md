@@ -12,6 +12,7 @@ Installation
 
 Install this module: (sorry it's not on pypi yet)
 
+	pip install git+https://github.com/JoshData/commonmark-py-plaintext
 	pip install git+https://github.com/if-then-fund/django-html-emailer
 
 Add `htmlemailer` to your INSTALLED_APPS.

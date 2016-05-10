@@ -4,7 +4,7 @@
 from setuptools import setup
 
 install_requires = [
-    'pynliner', 'commonmark', 'git+https://github.com/JoshData/commonmark-py-plaintext',
+    'pynliner', 'commonmark',
 ]
 
 setup(name='django-html-emailer',
