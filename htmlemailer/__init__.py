@@ -77,15 +77,7 @@ def build_template_context(user_variables):
     return template_context
 
 
-def render_from_markdown(md, template_context):
-    # Strip the "extends" tag.
-    m = re.match(r"\s*\{\%\s+extends\s+\"([^\"]*)\" \%\}", md)
-    extends_template = None
-    if m:
-        extends_template = m.group(1)
-        m = m.group(0)
-        md = md[len(m):]
-
+def render_from_markdown(template, template_context):
     # Render the Markdown first. Markdown has different text escaping rules
     # (backslash-escaping of certain symbols only), and we can't add that
     # logic to Django's template auto-escaping. So we render the Markdown
@@ -95,6 +87,10 @@ def render_from_markdown(md, template_context):
     # (If we did it in the other order, we'd have to disable Django's
     # HTML autoescaping and then have some other method to prevent the
     # use of variables in the template from generating Markdown tags.)
+    #
+    # Do this within each {% block %}...{% endblock %} tag, since we
+    # don't want to create HTML <p>s around content that doesn't occur
+    # within a block. Assumes there are no nested blocks.
     #
     # We turn off CommonMark's safe mode, however, since we trust the
     # template. (Safe mode prohibits HTML inlines and also prevents some
@@ -110,21 +106,35 @@ def render_from_markdown(md, template_context):
         return common.normalize_uri(uri).replace("%7B", "{").replace("%7D", "}")
     inlines.normalize_uri = fixed_normalize_uri
 
-    # Parse the Markdown.
-    md = CommonMark.Parser().parse(md)
+    # Build the HTML and text templates.
+
+    def run_renderer(renderer, ext, wrap=lambda x : x):
+        r = template
+
+        # fix the {% extends "..." %} file extension.
+        r = re.sub(
+            r"^(\s*\{%\s*extends\s+\"[^\"]*)(\"\s*%\})",
+            lambda m : m.group(1) + "." + ext + m.group(2),
+            r)
+
+        # Run CommonMark on each block separately.
+        r = re.sub(
+            r"(\{%\s*block [^%]+\s*%\})\s*([\s\S]*?)\s*(\{%\s*endblock\s*%\})",
+            lambda m : m.group(1)
+                     + wrap(renderer.render(CommonMark.Parser().parse(m.group(2))))
+                     + m.group(3),
+            r
+            )
+
+        return r
 
     # Render to HTML, put the extends tag back with an .html extension.
-    html_body = CommonMark.HtmlRenderer({ "safe": False }).render(md)
-    if extends_template:
-        html_body = "{% extends \"" + extends_template + ".html" + "\" %}\n" + html_body
+    html_body = run_renderer(CommonMark.HtmlRenderer({ "safe": False }), 'html')
 
-    # For the text portion, we'll render using a special renderer (see
-    # below), then wrap in a Django tag to turn off autoescaping, and
-    # then put back the extends tag but with a .txt extension.
-    text_body = CommonMarkPlainText.CommonMarkPlainTextRenderer().render(md)
-    text_body = "{% autoescape off %}" + text_body + "{% endautoescape %}"
-    if extends_template:
-        text_body = "{% extends \"" + extends_template + ".txt" + "\" %}\n" + text_body
+    # For the text portion, we'll render using a special renderer, and we'll
+    # wrap each block in the Django template directive to turn off auto-escaping.
+    text_body = run_renderer(CommonMarkPlainText.CommonMarkPlainTextRenderer(), 'txt',
+        wrap = lambda block : "{% autoescape off %}" + block + "{% endautoescape %}")
 
     # Now render as Django templates.
     html_body = Template(html_body).render(Context(template_context)).strip()
