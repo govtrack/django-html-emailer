@@ -3,20 +3,18 @@ from django.core.management.base import BaseCommand
 class Command(BaseCommand):
     args = 'templatename [recipient@address.com [sender@address.com]]'
 
+    def add_arguments(self, parser):
+        parser.add_argument('templatename')
+        parser.add_argument('recipient', nargs="?", default="recipient@example.org")
+        parser.add_argument('sender', nargs="?", default="Your Site <sender@example.org>")
+
     def handle(self, *args, **options):
-        if len(args) == 0:
-            print("Specify the base name of a template.")
-            return
-
-        template, recipient_address, sender_address = \
-            args + tuple(reversed(["recipient@example.org", "Your Site <sender@example.org>"]))
-
         from htmlemailer import send_mail
 
         send_mail(
-            template,
-            sender_address,
-            [recipient_address],
+            options["templatename"],
+            options["sender"],
+            [options["recipient"]],
 
             # example template context
             {

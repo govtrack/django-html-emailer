@@ -10,12 +10,11 @@ A utility app for sending HTML emails in Django 1.7+:
 Installation
 ------------
 
-Install this module: (sorry it's not on pypi yet)
+Install this module:
 
-	pip install git+https://github.com/JoshData/commonmark-py-plaintext
-	pip install git+https://github.com/if-then-fund/django-html-emailer
+	pip install django-html-emailer
 
-Add `htmlemailer` to your INSTALLED_APPS.
+Add `htmlemailer` to your Django settings's INSTALLED_APPS.
 
 Basic Usage
 -----------
@@ -59,8 +58,8 @@ and either
 
 if you want to use a single Markdown file or
 
-* (htmlemailer/templates/htmlemailer/example.txt)[htmlemailer/templates/htmlemailer/example.txt]
-* (htmlemailer/templates/htmlemailer/example.html)[htmlemailer/templates/htmlemailer/example.html]
+* [htmlemailer/templates/htmlemailer/example.txt](htmlemailer/templates/htmlemailer/example.txt)
+* [htmlemailer/templates/htmlemailer/example.html](htmlemailer/templates/htmlemailer/example.html)
 
 if you want to explicitly set the text and HTML parts of the message separately.
 
@@ -94,7 +93,7 @@ Testing (Library Developers)
 A test Django project is included. To use:
 
 	cd test_project
-	pip3 install pynliner commonmark
+	pip3 install pynliner commonmark commonmarkextensions
 	python3 manage.py test_html_email example
 	python3 manage.py test_html_email example2
 
@@ -104,3 +103,15 @@ License
 -------
 
 This project and the (upstream) boilerplate code are available under the MIT license.
+
+For Project Maintainers
+-----------------------
+
+To publish a universal wheel to pypi:
+
+    pip3 install twine
+    rm -rf dist
+    python3 setup.py bdist_wheel --universal
+    twine upload dist/*
+    git tag v1.0.XXX
+    git push --tags

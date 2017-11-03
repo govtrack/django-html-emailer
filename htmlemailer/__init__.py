@@ -9,7 +9,7 @@ import re
 
 import pynliner
 import CommonMark
-import CommonMarkPlainText
+import CommonMarkExtensions.plaintext
 
 def send_mail(template_prefix, from_email, recipient_list, template_context, fail_silently=False, **kwargs):
     # Sends a templated HTML email.
@@ -133,7 +133,7 @@ def render_from_markdown(template, template_context):
 
     # For the text portion, we'll render using a special renderer, and we'll
     # wrap each block in the Django template directive to turn off auto-escaping.
-    text_body = run_renderer(CommonMarkPlainText.CommonMarkPlainTextRenderer(), 'txt',
+    text_body = run_renderer(CommonMarkExtensions.plaintext.PlainTextRenderer(), 'txt',
         wrap = lambda block : "{% autoescape off %}" + block + "{% endautoescape %}")
 
     # Now render as Django templates.
