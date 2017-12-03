@@ -6,7 +6,7 @@ from codecs import open
 
 setup(
   name='django-html-emailer',
-  version='0.0.4',
+  version='0.0.5',
   
   description='Utility for sending HTML emails from Django.',
   long_description=open("README.md", encoding='utf-8').read(),
@@ -30,7 +30,7 @@ setup(
   install_requires=[
   	'pynliner',
   	"CommonMark==0.7.4",
-    "CommonMarkExtensions==0.0.1",
+    "CommonMarkExtensions>=0.0.1",
   ],
   packages=find_packages(),
   package_data={'htmlemailer': ['templates/htmlemailer/*']},
