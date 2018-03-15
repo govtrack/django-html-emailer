@@ -6,7 +6,7 @@ from codecs import open
 
 setup(
   name='django-html-emailer',
-  version='0.0.5',
+  version='0.0.6',
   
   description='Utility for sending HTML emails from Django.',
   long_description=open("README.md", encoding='utf-8').read(),
