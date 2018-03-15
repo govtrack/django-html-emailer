@@ -29,7 +29,7 @@ setup(
 
   install_requires=[
   	'pynliner',
-  	"CommonMark==0.7.4",
+  	"CommonMark>=0.7.4,<=0.7.5",
     "CommonMarkExtensions>=0.0.1",
   ],
   packages=find_packages(),
