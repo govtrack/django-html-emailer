@@ -8,7 +8,7 @@ from django.conf import settings
 import re
 
 import pynliner
-import CommonMark
+import commonmark
 import CommonMarkExtensions.plaintext
 
 def send_mail(template_prefix, from_email, recipient_list, template_context, fail_silently=False, **kwargs):
@@ -101,7 +101,7 @@ def render_from_markdown(template, template_context):
     # not do that for { and } so that template variables within links
     # remain a template variable and don't turn into %7B%7Bvarname%7D%7D.
     # Do this prior to parsing.
-    from CommonMark import common, inlines
+    from commonmark import common, inlines
     def fixed_normalize_uri(uri):
         return common.normalize_uri(uri).replace("%7B", "{").replace("%7D", "}")
     inlines.normalize_uri = fixed_normalize_uri
@@ -121,7 +121,7 @@ def render_from_markdown(template, template_context):
         r = re.sub(
             r"(\{%\s*block [^%]+\s*%\})\s*([\s\S]*?)\s*(\{%\s*endblock\s*%\})",
             lambda m : m.group(1)
-                     + wrap(renderer.render(CommonMark.Parser().parse(m.group(2))))
+                     + wrap(renderer.render(commonmark.Parser().parse(m.group(2))))
                      + m.group(3),
             r
             )
@@ -129,7 +129,7 @@ def render_from_markdown(template, template_context):
         return r
 
     # Render to HTML, put the extends tag back with an .html extension.
-    html_body = run_renderer(CommonMark.HtmlRenderer({ "safe": False }), 'html')
+    html_body = run_renderer(commonmark.HtmlRenderer({ "safe": False }), 'html')
 
     # For the text portion, we'll render using a special renderer, and we'll
     # wrap each block in the Django template directive to turn off auto-escaping.
