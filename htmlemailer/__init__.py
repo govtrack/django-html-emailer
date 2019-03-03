@@ -7,9 +7,14 @@ from django.conf import settings
 
 import re
 
-import pynliner
+from inlinestyler.utils import inline_css
 import commonmark
 import CommonMarkExtensions.plaintext
+
+# Remove cssutils's warnings, of which there are many.
+import cssutils
+import logging
+cssutils.log.setLevel(logging.ERROR)
 
 def send_mail(template_prefix, from_email, recipient_list, template_context, fail_silently=False, **kwargs):
     # Sends a templated HTML email.
@@ -45,7 +50,7 @@ def send_mail(template_prefix, from_email, recipient_list, template_context, fai
         html_body = render_to_string(template_prefix + '.html', template_context)
 
     # inline HTML styles because some mail clients dont process the <style> tag
-    html_body = pynliner.fromString(html_body)
+    html_body = inline_css(html_body)
 
     # construct MIME message
     msg = EmailMultiAlternatives(

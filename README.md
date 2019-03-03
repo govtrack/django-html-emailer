@@ -4,7 +4,7 @@ Django HTML Emailer
 A utility app for sending HTML emails in Django 1.7+:
 
 * Uses [HTML Email Boilerplate v0.5](http://htmlemailboilerplate.com/)
-* Inlines CSS (per the boilerplate's instructions) using [pynliner](https://pythonhosted.org/pynliner/).
+* Inlines CSS (per the boilerplate's instructions) using [inlinestyler](https://github.com/dlanger/inlinestyler).
 * Renders message body from Markdown or from text and HTML parts that you give.
 
 Installation
@@ -93,7 +93,7 @@ Testing (Library Developers)
 A test Django project is included. To use:
 
 	cd test_project
-	pip3 install pynliner commonmark commonmarkextensions
+	pip3 install inlinestyler commonmark commonmarkextensions
 	python3 manage.py test_html_email example
 	python3 manage.py test_html_email example2
 

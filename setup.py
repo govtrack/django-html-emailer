@@ -29,7 +29,7 @@ setup(
   license='MIT',
 
   install_requires=[
-  	'pynliner',
+  	'inlinestyler',
   	"commonmark>=0.8.0",
     "commonmarkextensions>=0.0.1",
   ],
