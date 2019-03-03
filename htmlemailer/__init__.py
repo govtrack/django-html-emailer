@@ -9,7 +9,7 @@ import re
 
 from inlinestyler.utils import inline_css
 import commonmark
-import CommonMarkExtensions.plaintext
+import commonmark_extensions.plaintext
 
 # Remove cssutils's warnings, of which there are many.
 import cssutils
@@ -138,7 +138,7 @@ def render_from_markdown(template, template_context):
 
     # For the text portion, we'll render using a special renderer, and we'll
     # wrap each block in the Django template directive to turn off auto-escaping.
-    text_body = run_renderer(CommonMarkExtensions.plaintext.PlainTextRenderer(), 'txt',
+    text_body = run_renderer(commonmark_extensions.plaintext.PlainTextRenderer(), 'txt',
         wrap = lambda block : "{% autoescape off %}" + block + "{% endautoescape %}")
 
     # Now render as Django templates.
