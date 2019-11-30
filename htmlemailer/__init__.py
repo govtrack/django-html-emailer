@@ -16,7 +16,7 @@ import cssutils
 import logging
 cssutils.log.setLevel(logging.ERROR)
 
-def send_mail(template_prefix, from_email, recipient_list, template_context, fail_silently=False, **kwargs):
+def send_mail(template_prefix, from_email, recipient_list, template_context, request=None, fail_silently=False, **kwargs):
     # Sends a templated HTML email.
     #
     # Unrecognized arguments are passed on to Django's EmailMultiAlternatives's init method.
@@ -25,7 +25,7 @@ def send_mail(template_prefix, from_email, recipient_list, template_context, fai
     template_context = build_template_context(template_context)
 
     # subject
-    subject = render_to_string(template_prefix + '_subject.txt', template_context)
+    subject = render_to_string(template_prefix + '_subject.txt', template_context, request=request)
     subject = re.sub(r"\s*[\n\r]+\s*", " ", subject).strip()  # remove superfluous internal white space around line breaks and leading/trailing spaces
 
     # Add subject as a new context variable, and it is used in the base HTML template's title tag.
@@ -46,8 +46,8 @@ def send_mail(template_prefix, from_email, recipient_list, template_context, fai
         text_body, html_body = render_from_markdown(md_template, template_context)
     else:
         # render from separate text and html templates
-        text_body = render_to_string(template_prefix + '.txt', template_context)
-        html_body = render_to_string(template_prefix + '.html', template_context)
+        text_body = render_to_string(template_prefix + '.txt', template_context, request=request)
+        html_body = render_to_string(template_prefix + '.html', template_context, request=request)
 
     # inline HTML styles because some mail clients dont process the <style> tag
     html_body = inline_css(html_body)
