@@ -118,7 +118,7 @@ def render_from_markdown(template, template_context):
 
         # fix the {% extends "..." %} file extension.
         r = re.sub(
-            r"^(\s*\{%\s*extends\s+\"[^\"]*)(\"\s*%\})",
+            r"^(\s*\{%\s*extends\s+[\"'][^\"']*)([\"']\s*%\})",
             lambda m : m.group(1) + "." + ext + m.group(2),
             r)
 
