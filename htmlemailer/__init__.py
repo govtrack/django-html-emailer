@@ -1,5 +1,6 @@
 from django.template.exceptions import TemplateDoesNotExist
-from django.template.base import Template, Context
+from django.template.base import Template
+from django.template.context import Context
 from django.template.engine import Engine
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
